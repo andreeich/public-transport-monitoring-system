@@ -51,6 +51,24 @@ def get_all_the_vehicles():
         print('Current location:', location['location']['latitude'], location['location']['longitude'])
         print()
 
+def get_estimated_arrival_time(lat, lon):
+  # Find the transport vehicle closest to the given coordinates
+  closest_vehicle = None
+  closest_distance = float('inf')
+  for location in get_locations():
+    # Calculate the distance between the given coordinates and the vehicle's current location
+    distance = ((location['latitude'] - lat)**2 + (location['longitude'] - lon)**2)**0.5
+
+    # If this distance is closer than the previous closest distance, update the closest vehicle and distance
+    if distance < closest_distance:
+      closest_vehicle = location['vehicle_id']
+      closest_distance = distance
+
+  # Calculate the estimated arrival time based on the vehicle's speed and the distance to the given coordinates
+  estimated_arrival_time = closest_distance / closest_vehicle['speed']
+
+  return estimated_arrival_time
+
 # Main part of the program
 while True:
     get_all_the_vehicles()
