@@ -41,6 +41,23 @@ def get_locations():
         locations = json.loads(response.text)
     return locations
 
+def get_stops():
+    # Set the URL for the public transport stops API
+    api_url = 'https://example.com/api/transport/stops'
+    # Set the location for the public transport stops data file
+    file_url = 'stops.json'
+    # Get current location of all the vehicles
+    if (test):
+        # Open local json file to get the current locations
+        with open(file_url) as file:
+            locations = json.load(file)
+    else:
+        # Make a GET request to the API to get the current locations
+        response = requests.get(api_url)
+        # Parse the response JSON
+        locations = json.loads(response.text)
+    return locations
+
 def get_all_the_vehicles():
     # Print the locations
     print("List of all available vehicles:")
@@ -49,6 +66,15 @@ def get_all_the_vehicles():
         print('Vehicle number:', location['number'])
         print('Vehicle id:', location['vehicle_id'])
         print('Current location:', location['location']['latitude'], location['location']['longitude'])
+        print()
+
+def get_all_the_stops():
+    # Print the stops
+    print("List of all stops:")
+    for location in get_stops():
+        print('Street name:', location['street'])
+        print('Is operating:', location['is_operating'])
+        print('Location:', location['location']['latitude'], location['location']['longitude'])
         print()
 
 def get_estimated_arrival_time(lat, lon):
@@ -72,6 +98,7 @@ def get_estimated_arrival_time(lat, lon):
 # Main part of the program
 while True:
     get_all_the_vehicles()
+    get_all_the_stops()
 
     # Sleep for the specified number of seconds before checking again
     time.sleep(update_frequency)

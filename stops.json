@@ -1,0 +1,26 @@
+[
+    {
+        "street": "Ivan Franko street",
+        "is_operating": true,
+        "location": {
+            "latitude": 13.7582,
+            "longitude": 92.9247
+        }
+    },
+    {
+        "street": "Vladimirskaya street",
+        "is_operating": true,
+        "location": {
+            "latitude": 10.2748,
+            "longitude": 9.0190
+        }
+    },
+    {
+        "street": "Pushkinskaya street",
+        "is_operating": true,
+        "location": {
+            "latitude": 49.3940,
+            "longitude": 33.9381
+        }
+    }
+]
