@@ -1,0 +1,32 @@
+[
+    {
+        "vehicle_id": 1212,
+        "type": "bus",
+        "number": "3b",
+        "speed": 20,
+        "location": {
+            "latitude": 40.7128,
+            "longitude": 74.0060
+        }
+    },
+    {
+        "vehicle_id": 2022,
+        "type": "minibus",
+        "number": "10",
+        "speed": 50,
+        "location": {
+            "latitude": 20.1320,
+            "longitude": 47.1050
+        }
+    },
+    {
+        "vehicle_id": 101,
+        "type": "tram",
+        "number": "4",
+        "speed": 10,
+        "location": {
+            "latitude": 87.0982,
+            "longitude": 12.1208
+        }
+    }
+]
