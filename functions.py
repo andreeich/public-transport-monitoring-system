@@ -1,27 +1,33 @@
 # Import the necessary modules
 import requests
 import json
-import time
-# Import the necessary modules from other files
-from main import test
+import math
 
-def get_locations():
-    # Set the URL for the public transport location API
+# Set testing variable for using location data from an API or local file
+test = True
+
+# Set timetable for collecting data (Name of the street | Nearest vehicle arriving time)
+timetable = {}
+
+# Get parsed json data dictionary about vehicles
+def get_vehicles():
+    # Set the URL for the public transport vehicles API
     api_url = 'https://example.com/api/transport/locations'
-    # Set the location for the public transport locations data file
-    file_url = 'locations.json'
-    # Get current location of all the vehicles
+    # Set the vehicles for the public transport vehicles data file
+    file_url = 'vehicles.json'
+    # Get current vehicles of all the vehicles
     if (test):
-        # Open local json file to get the current locations
+        # Open local json file to get the current vehicles
         with open(file_url) as file:
-            locations = json.load(file)
+            vehicles = json.load(file)
     else:
-        # Make a GET request to the API to get the current locations
+        # Make a GET request to the API to get the current vehicles
         response = requests.get(api_url)
         # Parse the response JSON
-        locations = json.loads(response.text)
-    return locations
+        vehicles = json.loads(response.text)
+    return vehicles
 
+# Get parsed json data dictionary about stops
 def get_stops():
     # Set the URL for the public transport stops API
     api_url = 'https://example.com/api/transport/stops'
@@ -29,49 +35,81 @@ def get_stops():
     file_url = 'stops.json'
     # Get current location of all the vehicles
     if (test):
-        # Open local json file to get the current locations
+        # Open local json file to get the current stops
         with open(file_url) as file:
-            locations = json.load(file)
+            stops = json.load(file)
     else:
-        # Make a GET request to the API to get the current locations
+        # Make a GET request to the API to get the current stops
         response = requests.get(api_url)
         # Parse the response JSON
-        locations = json.loads(response.text)
-    return locations
+        stops = json.loads(response.text)
+    return stops
 
-def get_all_the_vehicles():
-    # Print the locations
+# Print list of all available vehicles
+def print_vehicles():
+    # Print the vehicles
     print("List of all available vehicles:")
-    for location in get_locations():
-        print('Vehicle type:', location['type'])
-        print('Vehicle number:', location['number'])
-        print('Vehicle id:', location['vehicle_id'])
-        print('Current location:', location['location']['latitude'], location['location']['longitude'])
+    for vehicle in get_vehicles():
+        print('Vehicle type:', vehicle['type'])
+        print('Vehicle number:', vehicle['number'])
+        print('Vehicle id:', vehicle['vehicle_id'])
+        print('Current location:',
+              vehicle['location']['latitude'], vehicle['location']['longitude'])
         print()
 
-def get_all_the_stops():
+# Print list of all stops
+def print_stops():
     # Print the stops
     print("List of all stops:")
-    for location in get_stops():
-        print('Street name:', location['street'])
-        print('Is operating:', location['is_operating'])
-        print('Location:', location['location']['latitude'], location['location']['longitude'])
+    for stop in get_stops():
+        print('Street name:', stop['street'])
+        print('Is operating:', stop['is_operating'])
+        print('Location:', stop['location']
+              ['latitude'], stop['location']['longitude'])
         print()
 
-def get_estimated_arrival_time(lat, lon):
-  # Find the transport vehicle closest to the given coordinates
-  closest_vehicle = None
-  closest_distance = float('inf')
-  for location in get_locations():
-    # Calculate the distance between the given coordinates and the vehicle's current location
-    distance = ((location['latitude'] - lat)**2 + (location['longitude'] - lon)**2)**0.5
+# Calculate estimated arrival time (in hours)
+def get_estimated_arrival_time(location):
+    lat = location['latitude']
+    lon = location['longitude']
+    # Find the transport vehicle closest to the given coordinates
+    closest_vehicle = None
+    closest_distance = float('inf')
+    for vehicle in get_vehicles():
+        # Calculate the distance (km) between the given coordinates and the vehicle's current location
+        R = 6371  # radius of earth in kilometers
+        phi1 = math.radians(lat)
+        phi2 = math.radians(vehicle['location']['latitude'])
+        delta_phi = math.radians(vehicle['location']['latitude'] - lat)
+        delta_lambda = math.radians(vehicle['location']['longitude'] - lon)
 
-    # If this distance is closer than the previous closest distance, update the closest vehicle and distance
-    if distance < closest_distance:
-      closest_vehicle = location['vehicle_id']
-      closest_distance = distance
+        a = math.sin(delta_phi / 2)**2 + math.cos(phi1) * \
+            math.cos(phi2) * math.sin(delta_lambda / 2)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-  # Calculate the estimated arrival time based on the vehicle's speed and the distance to the given coordinates
-  estimated_arrival_time = closest_distance / closest_vehicle['speed']
+        distance = R * c
 
-  return estimated_arrival_time
+        # If this distance is closer than the previous closest distance, update the closest vehicle and distance
+        if distance < closest_distance:
+            closest_vehicle = vehicle
+            closest_distance = distance
+
+    # Calculate the estimated arrival time (hour) based on the vehicle's speed (km/hour) and the distance to the given coordinates
+    estimated_arrival_time = closest_distance / closest_vehicle['speed']
+
+    return estimated_arrival_time
+
+# Calculate and collect timetable data into dictionary
+def get_timetable():
+    for stop in get_stops():
+        hour, minutes = divmod(get_estimated_arrival_time(stop['location']), 1)
+        timetable[stop['street']
+                  ] = f"{int(hour)}h {int(round(minutes, 2) * 100)}m"
+
+# Print timetable (Name of the street | Nearest vehicle arriving time)
+def print_timetable():
+    get_timetable()
+    for street, time_left in timetable.items():
+        print("Street:", street)
+        print('Time left:', time_left)
+        print()
