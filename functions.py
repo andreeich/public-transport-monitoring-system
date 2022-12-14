@@ -2,16 +2,21 @@
 import requests
 import json
 import math
+import asyncio
+
+# Set the frequency for checking the locations (in seconds)
+update_frequency = 60
 
 # Set testing variable for using location data from an API or local file
 test = True
 
 # Set timetable for collecting data (Name of the street | Nearest vehicle arriving time)
 timetable = {}
+vehicles = []
+stops = []
+
 
 # Get parsed json data dictionary about vehicles
-
-
 def get_vehicles():
     # Set the URL for the public transport vehicles API
     api_url = 'https://example.com/api/transport/locations'
@@ -29,9 +34,8 @@ def get_vehicles():
         vehicles = json.loads(response.text)
     return vehicles
 
+
 # Get parsed json data dictionary about stops
-
-
 def get_stops():
     # Set the URL for the public transport stops API
     api_url = 'https://example.com/api/transport/stops'
@@ -49,13 +53,33 @@ def get_stops():
         stops = json.loads(response.text)
     return stops
 
+# Calculate and collect timetable data into dictionary
+def set_timetable():
+    global stops
+    for stop in stops:
+        hour, minutes = divmod(get_estimated_arrival_time(stop['location']), 1)
+        timetable[stop['street']
+                  ] = f"{int(hour)}h {int(round(minutes, 2) * 100)}m"
+
+
+# Update dictionaries of data
+async def update_data():
+    while True:
+        print('okay ---------------------------------------')
+        global vehicles
+        global stops
+        vehicles = get_vehicles()
+        stops = get_stops()
+        set_timetable()
+        await asyncio.sleep(update_frequency)
+
+
 # Print list of all available vehicles
-
-
 def print_vehicles():
+    global vehicles
     # Print the vehicles
     print("List of all available vehicles:")
-    for vehicle in get_vehicles():
+    for vehicle in vehicles:
         print('Vehicle type:', vehicle['type'])
         print('Vehicle number:', vehicle['number'])
         print('Vehicle id:', vehicle['vehicle_id'])
@@ -63,29 +87,29 @@ def print_vehicles():
               vehicle['location']['latitude'], vehicle['location']['longitude'])
         print()
 
+
 # Print list of all stops
-
-
 def print_stops():
+    global stops
     # Print the stops
     print("List of all stops:")
-    for stop in get_stops():
+    for stop in stops:
         print('Street name:', stop['street'])
         print('Is operating:', stop['is_operating'])
         print('Location:', stop['location']
               ['latitude'], stop['location']['longitude'])
         print()
 
+
 # Calculate estimated arrival time (in hours)
-
-
 def get_estimated_arrival_time(location):
+    global vehicles
     lat = location['latitude']
     lon = location['longitude']
     # Find the transport vehicle closest to the given coordinates
     closest_vehicle = None
     closest_distance = float('inf')
-    for vehicle in get_vehicles():
+    for vehicle in vehicles:
         # Calculate the distance (km) between the given coordinates and the vehicle's current location
         R = 6371  # radius of earth in kilometers
         phi1 = math.radians(lat)
@@ -109,29 +133,17 @@ def get_estimated_arrival_time(location):
 
     return estimated_arrival_time
 
-# Calculate and collect timetable data into dictionary
-
-
-def get_timetable():
-    for stop in get_stops():
-        hour, minutes = divmod(get_estimated_arrival_time(stop['location']), 1)
-        timetable[stop['street']
-                  ] = f"{int(hour)}h {int(round(minutes, 2) * 100)}m"
 
 # Print timetable (Name of the street | Nearest vehicle arriving time)
-
-
 def print_timetable():
-    get_timetable()
     print("Timetable:")
     for street, time_left in timetable.items():
         print("Street:", street)
         print('Time left:', time_left)
         print()
 
-
+# Print time left value for user's choice street
 def get_time_from_timetable():
-    get_timetable()
     counter = 1
     # Print the menu options
     for stop in timetable:
@@ -146,11 +158,20 @@ def get_time_from_timetable():
         if choice >= 1 and choice < counter:
             print("Arriving time:", list(timetable.values())[choice-1])
             print()
+        else:
+            print("Invalid choice. Please try again.")
+            print()
     except ValueError as e:
         print("ERROR:", e)
 
 
-def main():
+async def main():
+    # Ensure that the event loop is running
+    loop = asyncio.get_running_loop()
+
+    # Schedule the periodic task
+    task = loop.create_task(update_data())
+
     # Define a dictionary that maps the user's choice
     # to the corresponding code to run
     options = {
@@ -163,6 +184,8 @@ def main():
     # Keep displaying the menu and accepting input until
     # the user selects the option to quit
     while True:
+        await asyncio.sleep(0)
+        print("Menu:")
         # Print the menu options
         print("1. Show all the stops")
         print("2. Get full timetable")
@@ -176,7 +199,7 @@ def main():
         # function from the options dictionary
         if choice in options:
             options[choice]()
-
         # If the user's choice is not valid, display an error message
         else:
             print("Invalid choice. Please try again.")
+    await task
