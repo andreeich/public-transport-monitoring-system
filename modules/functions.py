@@ -53,6 +53,7 @@ def get_stops() -> list:
         stops = json.loads(response.text)
     return stops
 
+
 # Calculate and collect timetable data into dictionary
 def set_timetable():
     global stops
@@ -63,14 +64,19 @@ def set_timetable():
 
 
 # Update dictionaries of data
-async def update_data():
+def update_data():
+    global vehicles
+    global stops
+    vehicles = get_vehicles()
+    stops = get_stops()
+    set_timetable()
+
+
+# Async version of update_data
+async def update_data_async():
     while True:
         # print('Data was updated')
-        global vehicles
-        global stops
-        vehicles = get_vehicles()
-        stops = get_stops()
-        set_timetable()
+        update_data()
         await asyncio.sleep(update_frequency)
 
 
@@ -143,6 +149,8 @@ def print_timetable():
         print()
 
 # Print time left value for user's choice street
+
+
 def get_time_from_timetable():
     counter = 1
     # Print the menu options
@@ -170,7 +178,7 @@ async def main():
     loop = asyncio.get_running_loop()
 
     # Schedule the periodic task
-    task = loop.create_task(update_data())
+    task = loop.create_task(update_data_async())
 
     # Define a dictionary that maps the user's choice
     # to the corresponding code to run
