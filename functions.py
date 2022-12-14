@@ -10,6 +10,8 @@ test = True
 timetable = {}
 
 # Get parsed json data dictionary about vehicles
+
+
 def get_vehicles():
     # Set the URL for the public transport vehicles API
     api_url = 'https://example.com/api/transport/locations'
@@ -28,6 +30,8 @@ def get_vehicles():
     return vehicles
 
 # Get parsed json data dictionary about stops
+
+
 def get_stops():
     # Set the URL for the public transport stops API
     api_url = 'https://example.com/api/transport/stops'
@@ -46,6 +50,8 @@ def get_stops():
     return stops
 
 # Print list of all available vehicles
+
+
 def print_vehicles():
     # Print the vehicles
     print("List of all available vehicles:")
@@ -58,6 +64,8 @@ def print_vehicles():
         print()
 
 # Print list of all stops
+
+
 def print_stops():
     # Print the stops
     print("List of all stops:")
@@ -69,6 +77,8 @@ def print_stops():
         print()
 
 # Calculate estimated arrival time (in hours)
+
+
 def get_estimated_arrival_time(location):
     lat = location['latitude']
     lon = location['longitude']
@@ -100,6 +110,8 @@ def get_estimated_arrival_time(location):
     return estimated_arrival_time
 
 # Calculate and collect timetable data into dictionary
+
+
 def get_timetable():
     for stop in get_stops():
         hour, minutes = divmod(get_estimated_arrival_time(stop['location']), 1)
@@ -107,9 +119,64 @@ def get_timetable():
                   ] = f"{int(hour)}h {int(round(minutes, 2) * 100)}m"
 
 # Print timetable (Name of the street | Nearest vehicle arriving time)
+
+
 def print_timetable():
     get_timetable()
+    print("Timetable:")
     for street, time_left in timetable.items():
         print("Street:", street)
         print('Time left:', time_left)
         print()
+
+
+def get_time_from_timetable():
+    get_timetable()
+    counter = 1
+    # Print the menu options
+    for stop in timetable:
+        print(f"{counter}. {stop}")
+        counter += 1
+    # Prompt the user for their choice
+    choice = input("Enter your choice: ")
+    try:
+        choice = int(choice)
+        # If the user's choice is valid, call the corresponding
+        # function from the options dictionary
+        if choice >= 1 and choice < counter:
+            print("Arriving time:", list(timetable.values())[choice-1])
+            print()
+    except ValueError as e:
+        print("ERROR:", e)
+
+
+def main():
+    # Define a dictionary that maps the user's choice
+    # to the corresponding code to run
+    options = {
+        "1": print_stops,
+        "2": print_timetable,
+        "3": get_time_from_timetable,
+        "4": quit
+    }
+
+    # Keep displaying the menu and accepting input until
+    # the user selects the option to quit
+    while True:
+        # Print the menu options
+        print("1. Show all the stops")
+        print("2. Get full timetable")
+        print("3. Get arr. time for chosen street")
+        print("4. Quit")
+
+        # Prompt the user for their choice
+        choice = input("Enter your choice: ")
+
+        # If the user's choice is valid, call the corresponding
+        # function from the options dictionary
+        if choice in options:
+            options[choice]()
+
+        # If the user's choice is not valid, display an error message
+        else:
+            print("Invalid choice. Please try again.")
