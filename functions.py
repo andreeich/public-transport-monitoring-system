@@ -17,7 +17,7 @@ stops = []
 
 
 # Get parsed json data dictionary about vehicles
-def get_vehicles():
+def get_vehicles() -> list:
     # Set the URL for the public transport vehicles API
     api_url = 'https://example.com/api/transport/locations'
     # Set the vehicles for the public transport vehicles data file
@@ -36,7 +36,7 @@ def get_vehicles():
 
 
 # Get parsed json data dictionary about stops
-def get_stops():
+def get_stops() -> list:
     # Set the URL for the public transport stops API
     api_url = 'https://example.com/api/transport/stops'
     # Set the location for the public transport stops data file
@@ -65,7 +65,7 @@ def set_timetable():
 # Update dictionaries of data
 async def update_data():
     while True:
-        print('okay ---------------------------------------')
+        # print('Data was updated')
         global vehicles
         global stops
         vehicles = get_vehicles()
@@ -102,7 +102,7 @@ def print_stops():
 
 
 # Calculate estimated arrival time (in hours)
-def get_estimated_arrival_time(location):
+def get_estimated_arrival_time(location: dict) -> float:
     global vehicles
     lat = location['latitude']
     lon = location['longitude']
@@ -175,10 +175,9 @@ async def main():
     # Define a dictionary that maps the user's choice
     # to the corresponding code to run
     options = {
-        "1": print_stops,
-        "2": print_timetable,
-        "3": get_time_from_timetable,
-        "4": quit
+        "1": print_timetable,
+        "2": get_time_from_timetable,
+        "3": quit
     }
 
     # Keep displaying the menu and accepting input until
@@ -187,10 +186,9 @@ async def main():
         await asyncio.sleep(0)
         print("Menu:")
         # Print the menu options
-        print("1. Show all the stops")
-        print("2. Get full timetable")
-        print("3. Get arr. time for chosen street")
-        print("4. Quit")
+        print("1. Get full timetable")
+        print("2. Get arr. time for street")
+        print("3. Quit")
 
         # Prompt the user for their choice
         choice = input("Enter your choice: ")
