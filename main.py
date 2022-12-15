@@ -1,9 +1,6 @@
-# Import the necessary modules
-import time
-import asyncio
 # Import the necessary modules from other files
-import modules.functions as f
+from modules.presentation_layer import PresentationConnector
 
 # Main function
 if __name__ == "__main__":
-    asyncio.run(f.main())
+    pc = PresentationConnector(True, True)
